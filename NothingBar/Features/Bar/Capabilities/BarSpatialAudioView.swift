@@ -26,7 +26,7 @@ struct BarSpatialAudioView: View {
             let model = deviceState.model
             let currentMode = deviceState.spatialAudioMode ?? .off
             let enhancedBass = deviceState.enhancedBass
-            let supportedModes = model.map(SpatialAudioMode.allSupported(by:)) ?? []
+            let supportedModes = model.map(SpatialAudioMode.availableModes(for:)) ?? []
             let isDisabled = deviceState.spatialAudioMode == nil
 
             BarSectionView(
@@ -80,6 +80,17 @@ struct BarSpatialAudioView: View {
 }
 
 private extension SpatialAudioMode {
+
+    /// SwiftNothingEar's `allSupported(by:)` groups Headphone (a) with
+    /// Headphone (1)/(1) Pro, but Headphone (a) has no head tracking —
+    /// like CMF Headphone Pro, it offers Cinema and Concert surround modes.
+    static func availableModes(for model: DeviceModel) -> [Self] {
+        if case .headphoneA = model {
+            return [.off, .cinema, .concert]
+        }
+
+        return allSupported(by: model)
+    }
 
     var imageName: ImageResource {
         switch self {
